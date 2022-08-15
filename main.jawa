@@ -1,0 +1,205 @@
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner s = new Scanner(System.in);
+
+        System.out.println("Welcome to the TIC TAC TOE");
+
+        while (true) {
+            int i, j ;
+            int xWinner, oWinner ;
+            int roundP = 0;
+            int roundX = 0;
+            int round0 = 0;
+            int xPl = 0;
+            int oPl = 0;
+            int xLast = 0;
+            int oLast = 0;
+            String o = "0";
+            String x = "X";
+
+            System.out.println(" For Escape type (Q or q), to continue type any another one: ");
+            String quit = s.next();
+            if (quit.equals("q") || quit.equals("Q")) {
+                break;                                                           /* to quit a game */
+            }
+
+            /* map location  creating*/
+            String[][] location = {{"00", "01", "02"}, {"10", "11", "12"}, {"20", "21", "22"}};
+
+            /*  empty map array creating*/
+            String a = ".";
+            String[][] games = new String[3][3];
+            for (i = 0; i < games.length; ++i) {
+                for (j = 0; j < games[i].length; ++j) {
+                    games[i][j] = a;
+                }
+            }
+
+            showMapArray(games);
+            System.out.println("Type X or 0 in the following location");
+            showMapArray(location);
+            System.out.println(" Type X or 0");
+            String ch = s.next();
+
+            ch = ifIllegalCharacter(ch);             /* Illegal character, only X or 0, Try again */
+
+            if (ch.equals("0") || ch.equals("o")) {
+                oPl = 1;                                /* 0 is a next player */
+                xPl = 0;
+            }
+            if (ch.equals("x") || ch.equals("X")) {
+                xPl = 1;
+                oPl = 0;                                /* X is a next player */
+            }
+
+            while (xPl == 1 || oPl == 1) {
+
+                while (xLast == xPl && xLast == 1) {
+                    System.out.println("You Last type X and the Next type must be 0 ");
+                    ch = s.next();
+                    ch = ifIllegalCharacter(ch);
+                    if (ch.equals("0") || ch.equals("o")) {
+                        oPl = 1;                            /* 0 is a next player */
+                        xPl = 0;
+                    }
+                }
+                while (oLast == oPl && oLast == 1) {
+                    System.out.println("You Last type 0 and the Next type must be X ");
+                    ch = s.next();
+                    ch = ifIllegalCharacter(ch);
+                    if (ch.equals("x") || ch.equals("X")) {
+                        xPl = 1;                        /* X is a next player */
+                        oPl = 0;
+                    }
+                }
+
+                if (xPl == 1) {
+                    xLast = 1;                          /* Update last player to X */
+                    oLast = 0;
+                }
+                if (oPl == 1) {
+                    oLast = 1;                          /* Update last player to 0 */
+                    xLast = 0;
+                }
+
+                System.out.println("Choice your " + ch + " location: ");
+
+                String testCh = testTwoDigitLocations();
+
+                int loc = Integer.parseInt(testCh);
+                int inum = loc / 10;                            /* next location calculation */
+                int jnum = loc % 10;
+
+                /* Check Location Empty */
+                String empty = games[inum][jnum];
+                while (!(empty.equals(a))) {
+                    System.out.println("Location is busy,tray again");
+                    loc = s.nextInt();
+                    inum = loc / 10;                              /* next location calculation */
+                    jnum = loc % 10;
+                    empty = games[inum][jnum];
+                }
+
+                /* Update location map */
+                if (ch.equals("0") || (ch.equals("o"))) {
+                    games[inum][jnum] = o;                         /* Update game map by "0" Player */
+                    location[inum][jnum] = o;
+                    round0++;                                       /* "0" Player counter  */
+                }
+                if (ch.equals("x") || (ch.equals("X"))) {
+                    games[inum][jnum] = x;                         /* Update game map by "X" Player */
+                    location[inum][jnum] = x;
+                    roundX++;                                        /* "X" Player counter  */
+                }
+                roundP++;                                              /* Total round counter */
+
+                /* 0 Winner conditions */
+                oWinner = checkWinner(games, o, round0);
+
+                /* X Winner conditions */
+                xWinner = checkWinner(games, x, roundX);
+
+                showMapArray(games);
+                System.out.println("-------");
+                showMapArray(location);
+
+
+                /*Game is over without winner*/
+                if (roundP == 9) {
+                    System.out.println("***********");
+                    System.out.println(".... Game is over without winner ....");
+                    break;
+                }
+
+                /*  0 is a WINNER   */
+                if (oWinner == 1) {
+                    System.out.println("***********");
+                    System.out.println(" !!!!! 0 is a WINNER  !!!!");
+                    break;
+                }
+                 /*   X is a WINNER    */
+                if (xWinner == 1) {
+                    System.out.println("********");
+                    System.out.println(" !!!!! X is a WINNER  !!!!! ");
+                    break;
+                }
+            }
+        }
+    }
+
+    public static String testTwoDigitLocations() {
+        Scanner s = new Scanner(System.in);
+        String testCh = s.next();
+
+        /* Two Characters Only */
+        while (!(testCh.length() == 2)) {
+            System.out.println("Type only two digit consist by: 0,1,2 from the location map");
+            testCh = s.next();
+        }
+        /* Only Location Map Digit */
+        while (!(testCh.equals("00")) && !(testCh.equals("01")) && !(testCh.equals("02")) &&
+                !(testCh.equals("10")) && !(testCh.equals("11")) && !(testCh.equals("12"))&&
+                !(testCh.equals("20")) && !(testCh.equals("21")) && !(testCh.equals("22"))){
+            System.out.println("Illegal characters, Type only from location map");
+            testCh = s.next();
+        }
+        return testCh;
+    }
+
+    //    /* Check Winner */
+    public static int checkWinner(String games[][], String win, int round) {
+        int winner = 0;
+        if ((round >= 3) &&
+                (games[0][0].equals(win)) && (games[0][0].equals(games[0][1])) && (games[0][0].equals(games[0][2])) ||
+                (games[1][0].equals(win)) && (games[1][0].equals(games[1][1])) && (games[1][0].equals(games[1][2])) ||
+                (games[2][0].equals(win)) && (games[2][0].equals(games[2][1])) && (games[2][0].equals(games[2][2])) ||
+                (games[0][0].equals(win)) && (games[0][0].equals(games[1][1])) && (games[0][0].equals(games[2][2])) ||
+                (games[2][0].equals(win)) && (games[2][0].equals(games[1][1])) && (games[2][0].equals(games[0][2])) ||
+                (games[0][0].equals(win)) && (games[0][0].equals(games[1][0])) && (games[0][0].equals(games[2][0])) ||
+                (games[0][1].equals(win)) && (games[0][1].equals(games[1][1])) && (games[0][1].equals(games[2][1])) ||
+                (games[0][2].equals(win)) && (games[0][2].equals(games[1][2])) && (games[0][2].equals(games[2][2]))) {
+            winner = 1;
+        }
+        return winner;
+    }
+
+    /*show empty array */
+    public static void showMapArray(String games[][]) {
+        for (int k = 0; k < 3; ++k) {
+            System.out.println(String.format("%s %s %s", games[k][0], games[k][1], games[k][2]));
+        }
+    }
+    public static String ifIllegalCharacter(String ch) {
+        while (!(ch.equals("0")) && !(ch.equals("o")) && !(ch.equals("x")) && !(ch.equals("X"))) {
+            Scanner s = new Scanner(System.in);
+            System.out.println("  Illegal character. Only X or 0, Try again");
+            ch = s.next();
+        }
+        return ch;
+    }
+
+
+
+}
